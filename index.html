@@ -153,7 +153,7 @@
       <div id="word-list-container" class="space-y-3 max-h-[460px] overflow-y-auto pr-1 pt-1"></div>
     </section>
 
-    <!-- 4. ➕ 獨立新增單字分頁 (全語言適配詞性與建議) -->
+    <!-- 4. ➕ 獨立新增單字分頁 -->
     <section id="tab-add" class="space-y-4 hidden">
       <div class="bg-white/95 backdrop-blur-md theme-radius shadow-lg border-2 custom-theme-border p-6">
         <div class="flex items-center justify-between mb-4">
@@ -183,10 +183,7 @@
           <div>
             <div class="flex flex-wrap justify-between items-center gap-1 mb-1">
               <label class="block text-xs font-bold text-slate-600">🌷 中文解釋 *</label>
-              <!-- 根據當前語言動態渲染詞性按鈕 -->
-              <div class="flex items-center gap-1 text-[11px]" id="pos-btn-group">
-                <!-- JS 動態依語言注入 -->
-              </div>
+              <div class="flex items-center gap-1 text-[11px]" id="pos-btn-group"></div>
             </div>
             <div class="relative">
               <input id="input-def" type="text" required 
@@ -268,6 +265,7 @@
           </select>
         </div>
 
+        <!-- 自由調色與背景自訂區 -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
           <div>
             <div class="flex items-center justify-between mb-1">
@@ -372,6 +370,7 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
+    // 取得主題設定
     let userTheme = JSON.parse(localStorage.getItem('vocab_theme_cfg_v13')) || {
       preset: 'slate',
       primary: '#334155',
@@ -456,7 +455,6 @@
       applyThemeConfig(userTheme);
     }
 
-    // --- 🌐 多語言詞性定義與映射庫 ---
     const LANG_CONFIG = {
       'en-US': {
         name: '英語多益 TOEIC',
@@ -550,7 +548,6 @@
       return '#生活職場通用';
     }
 
-    // 多語系本地字尾推導
     function detectPOSByLanguage(word, lang) {
       const w = word.trim().toLowerCase();
       if (!w) return ['v.'];
@@ -564,7 +561,6 @@
         if (w.endsWith('하다') || w.endsWith('되다') || w.endsWith('다')) return ['동.'];
         return ['명.'];
       }
-      // 歐語與英語
       if (w.endsWith('ly')) return ['adv.'];
       if (w.endsWith('tion') || w.endsWith('ment') || w.endsWith('ness') || w.endsWith('er') || w.endsWith('or')) return ['n.'];
       if (w.endsWith('ize') || w.endsWith('ate') || w.endsWith('en') || w.endsWith('ir') || w.endsWith('er') || w.endsWith('ar')) return ['v.'];
@@ -611,7 +607,46 @@
       }
     ];
 
-    let words = JSON.parse(localStorage.getItem('toeic_multi_words_v19')) || DEFAULT_WORDS;
+    // ==========================================
+    // 🌟 全歷史版本資料自動回溯與安全遷移核心 🌟
+    // ==========================================
+    function loadAndMigrateAllWords() {
+      const STORAGE_KEY = 'vocab_app_master_words_v1';
+      let masterWords = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+      // 檢查並撈出以往所有版本舊鍵值
+      const legacyKeys = [
+        'toeic_multi_words_v18', 'toeic_multi_words_v17', 'toeic_multi_words_v16', 'toeic_multi_words_v15',
+        'toeic_multi_words_v14', 'toeic_multi_words_v13', 'toeic_multi_words_v12', 'toeic_multi_words_v11',
+        'toeic_multi_words_v10', 'toeic_multi_words_v9', 'toeic_multi_words_v8', 'toeic_multi_words_v7',
+        'toeic_multi_words_v6', 'toeic_multi_words_v5', 'toeic_multi_words_v4', 'toeic_words_v3', 'toeic_words_v2', 'toeic_words'
+      ];
+
+      legacyKeys.forEach(k => {
+        try {
+          const oldData = JSON.parse(localStorage.getItem(k));
+          if (Array.isArray(oldData) && oldData.length > 0) {
+            oldData.forEach(item => {
+              // 檢查是否有重複 word (不分大小寫)
+              const exists = masterWords.some(w => w.word.toLowerCase() === (item.word || '').toLowerCase());
+              if (!exists && item.word) {
+                masterWords.push(item);
+              }
+            });
+          }
+        } catch(e) {}
+      });
+
+      if (masterWords.length === 0) {
+        masterWords = DEFAULT_WORDS;
+      }
+
+      // 永久寫入主儲存庫
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(masterWords));
+      return masterWords;
+    }
+
+    let words = loadAndMigrateAllWords();
     let activeLang = localStorage.getItem('vocab_active_lang') || 'en-US';
     let selectedTag = 'ALL';
     let isFlipped = false;
@@ -644,11 +679,10 @@
     }
 
     function saveWords() {
-      localStorage.setItem('toeic_multi_words_v19', JSON.stringify(words));
+      localStorage.setItem('vocab_app_master_words_v1', JSON.stringify(words));
       updateStats();
     }
 
-    // --- 🔤 動態依語言渲染詞性按鈕 ---
     function renderPOSBadges() {
       const group = document.getElementById('pos-btn-group');
       if (!group) return;
@@ -656,7 +690,6 @@
       const cfg = LANG_CONFIG[activeLang] || LANG_CONFIG['en-US'];
       document.getElementById('def-format-hint').innerHTML = cfg.hint;
 
-      // 檢查當前選取的集合是否符合新語言格式，若不符合則預設選第一個
       const validKeys = cfg.posMap.map(m => m.key);
       const hasValid = Array.from(selectedPOSSet).some(k => validKeys.includes(k));
       if (!hasValid) {
@@ -701,7 +734,6 @@
       const validKeys = cfg.posMap.map(m => m.key);
       const activePrefixes = validKeys.filter(p => selectedPOSSet.has(p));
 
-      // 檢查是否已手動打入詞性
       const hasEmbeddedPOS = validKeys.some(k => rawText.includes(k));
 
       if (!hasEmbeddedPOS) {
@@ -736,7 +768,6 @@
       }
     }
 
-    // --- 🌏 全語言拼字與候選字建議引擎 ---
     async function handleWordTyping(query) {
       clearTimeout(debounceTimer);
       const clean = query.trim();
@@ -748,7 +779,6 @@
         return;
       }
 
-      // 本地多語詞性預判
       const localPos = detectPOSByLanguage(clean, activeLang);
       setPOSList(localPos);
 
@@ -761,8 +791,7 @@
             const res = await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(clean.toLowerCase())}*&max=5&md=dp`);
             suggestions = await res.json();
           } else {
-            // 多語系維基詞條 / Wiktionary 即時補全引擎 (日/韓/德/法/西通用)
-            const langCode = activeLang.split('-')[0]; // 'ja', 'ko', 'es', 'fr', 'de'
+            const langCode = activeLang.split('-')[0];
             const res = await fetch(`https://${langCode}.wikipedia.org/w/api.php?action=opensearch&format=json&origin=*&search=${encodeURIComponent(clean)}&limit=5`);
             const data = await res.json();
             if (data && data[1]) {
@@ -772,7 +801,7 @@
 
           renderSuggestions(suggestions);
         } catch (e) {
-          console.log('多語查詢備援');
+          console.log('備援中');
         } finally {
           spinner.classList.add('hidden');
         }
@@ -970,7 +999,7 @@
           <div class="my-auto text-center py-8">
             <div class="flex items-center justify-center gap-3">
               <h2 class="text-3xl sm:text-5xl font-black text-slate-800 tracking-wide">${current.word}</h2>
-              <button onclick="speak('${current.word}')" class="p-2 custom-theme-light-bg custom-theme-text rounded-full hover:opacity-80 transition active:scale-95" title="朗讀發音">🔊</button>
+              <button onclick="speak('${current.word.replace(/'/g, "\\'")}')" class="p-2 custom-theme-light-bg custom-theme-text rounded-full hover:opacity-80 transition active:scale-95" title="朗讀發音">🔊</button>
             </div>
             <p class="text-xs text-slate-400 font-medium mt-3">點擊下方按鈕翻開查看釋義 📖</p>
           </div>
@@ -989,7 +1018,7 @@
           <div class="my-auto text-center py-4 space-y-3">
             <div class="flex items-center justify-center gap-2">
               <h2 class="text-2xl sm:text-3xl font-black text-slate-800">${current.word}</h2>
-              <button onclick="speak('${current.word}')" class="p-1 custom-theme-text hover:opacity-80 transition">🔊</button>
+              <button onclick="speak('${current.word.replace(/'/g, "\\'")}')" class="p-1 custom-theme-text hover:opacity-80 transition">🔊</button>
             </div>
             <p class="text-xl font-black custom-theme-text">${current.definition}</p>
             ${current.example ? `
@@ -1027,8 +1056,6 @@
       isFlipped = false;
       renderCard();
     }
-
-    // --- 📝 隨堂測驗 (支援多語克漏字與拼寫) ---
 
     function showQuizStartScreen() {
       const currentList = getActiveLangWords();
@@ -1218,7 +1245,6 @@
         activeType = 'choice';
       }
 
-      // 1. 🔤 單字四選一
       if (activeType === 'choice') {
         const others = currentList.filter(w => w.id !== target.id).sort(() => 0.5 - Math.random()).slice(0, 3);
         const options = [target, ...others].sort(() => 0.5 - Math.random());
@@ -1240,9 +1266,7 @@
           </div>
           <div id="quiz-feedback" class="text-center min-h-[24px]"></div>
         `;
-      } 
-      // 2. 🧩 例句克漏字填空 (多語系無空格相容)
-      else if (activeType === 'cloze') {
+      } else if (activeType === 'cloze') {
         const regex = new RegExp(target.word, 'gi');
         const clozeSentence = target.example.replace(regex, ' [ _______ ] ');
 
@@ -1266,9 +1290,7 @@
           </div>
           <div id="quiz-feedback" class="text-center min-h-[24px]"></div>
         `;
-      } 
-      // 3. 📝 多語聽音拼寫填空題
-      else if (activeType === 'spelling') {
+      } else if (activeType === 'spelling') {
         container.innerHTML = `
           <div class="text-center py-5 custom-theme-light-bg rounded-2xl border custom-theme-border space-y-2">
             <span class="text-xs custom-theme-text font-bold uppercase tracking-wider">📝 聽音拼寫填空</span>
