@@ -103,7 +103,7 @@
       </button>
     </nav>
 
-    <!-- 1. 複習分頁 -->
+    <!-- 1. 複習分頁 (支援忘記四選一救援與深入檢討跳題) -->
     <section id="tab-review" class="space-y-4">
       <main id="card-container" class="bg-white/95 backdrop-blur-md theme-radius shadow-lg border-2 custom-theme-border p-6 sm:p-8 min-h-[350px] flex flex-col justify-between transition-all duration-300">
         <!-- 由 JS 動態渲染 -->
@@ -619,7 +619,7 @@
         return `Es muy importante entender el concepto de "${cleanWord}". (理解「${cleanDef}」的概念非常重要。)`;
       }
       if (lang === 'fr-FR') {
-        return `Nous devons bien comprendre "${cleanWord}" pour ce projet. (為了這個專案，我們必須充分理解「${cleanDef}」。)`;
+        return `Nous devons bien理解 "${cleanWord}" pour ce projet. (為了這個專案，我們必須充分理解「${cleanDef}」。)`;
       }
       if (lang === 'de-DE') {
         return `Wir müssen die Bedeutung von "${cleanWord}" genau kennen. (我們必須確切了解「${cleanDef}」的含義。)`;
@@ -678,16 +678,12 @@
       }
     ];
 
-    // ==========================================
-    // 🌟 一次性安全遷移（永久修復重複撈回 Bug） 🌟
-    // ==========================================
     function loadAndInitWords() {
       const STORAGE_KEY = 'vocab_app_master_words_v1';
       const MIGRATION_FLAG = 'vocab_migration_completed_flag';
 
       let masterWords = JSON.parse(localStorage.getItem(STORAGE_KEY));
 
-      // 若未曾完成遷移，執行一次歷史數據撈取
       if (!localStorage.getItem(MIGRATION_FLAG)) {
         if (!masterWords || !Array.isArray(masterWords)) masterWords = [];
 
@@ -717,7 +713,7 @@
         }
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(masterWords));
-        localStorage.setItem(MIGRATION_FLAG, 'true'); // 標記已完成，永不再重複掃描舊版
+        localStorage.setItem(MIGRATION_FLAG, 'true');
       }
 
       return masterWords || DEFAULT_WORDS;
@@ -728,6 +724,7 @@
     let activeLang = localStorage.getItem('vocab_active_lang') || 'en-US';
     let selectedTag = 'ALL';
     let isFlipped = false;
+    let reviewMode = 'normal'; // 'normal' (正常翻卡), 'rescue' (忘記時的四選一救援), 'explain' (答錯時的深入檢討)
     let currentTab = 'review';
     let debounceTimer = null;
     let selectedPOSSet = new Set(['v.']);
@@ -1008,6 +1005,7 @@
       document.getElementById('quiz-lang-label').textContent = LANG_NAMES[lang] || lang;
 
       isFlipped = false;
+      reviewMode = 'normal';
       updateStats();
       renderPOSBadges();
       updateTrashBadge();
@@ -1105,10 +1103,14 @@
       };
     }
 
+    // ==========================================
+    // 🌟 複習卡片系統（含忘記救援與深入檢討跳題） 🌟
+    // ==========================================
     function renderCard() {
       const dueWords = getDueWords();
       const container = document.getElementById('card-container');
       const langName = LANG_NAMES[activeLang] || activeLang;
+      const currentList = getActiveLangWords();
 
       if (dueWords.length === 0) {
         container.innerHTML = `
@@ -1123,52 +1125,119 @@
 
       const current = dueWords[0];
 
-      if (!isFlipped) {
-        container.innerHTML = `
-          <div class="flex justify-between items-center text-xs font-bold text-slate-400">
-            <span class="custom-theme-light-bg custom-theme-text px-3 py-1 rounded-full border custom-theme-border">${current.tag || '#生活職場通用'}</span>
-            <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full">⭐ Lv.${current.repetition} (間隔 ${current.interval} 天)</span>
-          </div>
-
-          <div class="my-auto text-center py-8">
-            <div class="flex items-center justify-center gap-3">
-              <h2 class="text-3xl sm:text-5xl font-black text-slate-800 tracking-wide">${current.word}</h2>
-              <button onclick="speak('${current.word.replace(/'/g, "\\'")}')" class="p-2 custom-theme-light-bg custom-theme-text rounded-full hover:opacity-80 transition active:scale-95" title="朗讀發音">🔊</button>
+      // 1. 正常正反面翻卡模式
+      if (reviewMode === 'normal') {
+        if (!isFlipped) {
+          container.innerHTML = `
+            <div class="flex justify-between items-center text-xs font-bold text-slate-400">
+              <span class="custom-theme-light-bg custom-theme-text px-3 py-1 rounded-full border custom-theme-border">${current.tag || '#生活職場通用'}</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full">⭐ Lv.${current.repetition} (間隔 ${current.interval} 天)</span>
             </div>
-            <p class="text-xs text-slate-400 font-medium mt-3">點擊下方按鈕翻開查看釋義 📖</p>
-          </div>
 
-          <button onclick="flipCard()" class="w-full py-3.5 custom-theme-bg text-white font-bold rounded-xl text-sm shadow-md transition-all duration-200 active:scale-98">
-            ✨ 翻開看中文與例句
-          </button>
-        `;
-      } else {
+            <div class="my-auto text-center py-8">
+              <div class="flex items-center justify-center gap-3">
+                <h2 class="text-3xl sm:text-5xl font-black text-slate-800 tracking-wide">${current.word}</h2>
+                <button onclick="speak('${current.word.replace(/'/g, "\\'")}')" class="p-2 custom-theme-light-bg custom-theme-text rounded-full hover:opacity-80 transition active:scale-95" title="朗讀發音">🔊</button>
+              </div>
+              <p class="text-xs text-slate-400 font-medium mt-3">點擊下方按鈕翻開查看釋義 📖</p>
+            </div>
+
+            <button onclick="flipCard()" class="w-full py-3.5 custom-theme-bg text-white font-bold rounded-xl text-sm shadow-md transition-all duration-200 active:scale-98">
+              ✨ 翻開看中文與例句
+            </button>
+          `;
+        } else {
+          container.innerHTML = `
+            <div class="flex justify-between items-center text-xs font-bold text-slate-400">
+              <span class="custom-theme-light-bg custom-theme-text px-3 py-1 rounded-full border custom-theme-border">${current.tag || '#生活職場通用'}</span>
+              <span class="text-slate-400">Ease: ${current.easeFactor}</span>
+            </div>
+
+            <div class="my-auto text-center py-4 space-y-3">
+              <div class="flex items-center justify-center gap-2">
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-800">${current.word}</h2>
+                <button onclick="speak('${current.word.replace(/'/g, "\\'")}')" class="p-1 custom-theme-text hover:opacity-80 transition">🔊</button>
+              </div>
+              <p class="text-xl font-black custom-theme-text">${current.definition}</p>
+              ${current.example ? `
+                <div class="text-left custom-theme-light-bg p-3.5 rounded-xl border custom-theme-border mt-2">
+                  <p class="text-xs font-bold custom-theme-text mb-1">💬 情境例句與翻譯：</p>
+                  <p class="text-xs text-slate-600 italic">"${current.example}"</p>
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="grid grid-cols-4 gap-2 pt-3 border-t custom-theme-border">
+              <button onclick="handleRate(0)" class="py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold rounded-xl text-xs border border-rose-200 transition active:scale-95">😭 忘記<br><span class="font-normal text-[10px]">救援提示</span></button>
+              <button onclick="handleRate(1)" class="py-2.5 bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold rounded-xl text-xs border border-amber-200 transition active:scale-95">🥺 困難<br><span class="font-normal text-[10px]">縮短</span></button>
+              <button onclick="handleRate(2)" class="py-2.5 bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold rounded-xl text-xs border border-sky-200 transition active:scale-95">😊 良好<br><span class="font-normal text-[10px]">標準</span></button>
+              <button onclick="handleRate(3)" class="py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-xl text-xs border border-emerald-200 transition active:scale-95">🥳 簡單<br><span class="font-normal text-[10px]">延長</span></button>
+            </div>
+          `;
+        }
+      } 
+      // 2. 😭 忘記時的「即時四選一救援提示模式」
+      else if (reviewMode === 'rescue') {
+        const others = currentList.filter(w => w.id !== current.id).sort(() => 0.5 - Math.random()).slice(0, 3);
+        const options = [current, ...others].sort(() => 0.5 - Math.random());
+
         container.innerHTML = `
-          <div class="flex justify-between items-center text-xs font-bold text-slate-400">
-            <span class="custom-theme-light-bg custom-theme-text px-3 py-1 rounded-full border custom-theme-border">${current.tag || '#生活職場通用'}</span>
-            <span class="text-slate-400">Ease: ${current.easeFactor}</span>
+          <div class="flex justify-between items-center text-xs font-bold text-rose-500">
+            <span class="bg-rose-50 text-rose-700 px-3 py-1 rounded-full border border-rose-200">💡 忘記救援提示</span>
+            <span class="text-slate-400">請選出正確意思加深印象</span>
           </div>
 
-          <div class="my-auto text-center py-4 space-y-3">
+          <div class="my-auto text-center py-4 space-y-2">
             <div class="flex items-center justify-center gap-2">
-              <h2 class="text-2xl sm:text-3xl font-black text-slate-800">${current.word}</h2>
-              <button onclick="speak('${current.word.replace(/'/g, "\\'")}')" class="p-1 custom-theme-text hover:opacity-80 transition">🔊</button>
+              <h2 class="text-3xl sm:text-4xl font-black text-slate-800">${current.word}</h2>
+              <button onclick="speak('${current.word.replace(/'/g, "\\'")}')" class="p-1.5 custom-theme-light-bg custom-theme-text rounded-full hover:opacity-80 transition" title="朗讀發音">🔊</button>
             </div>
-            <p class="text-xl font-black custom-theme-text">${current.definition}</p>
+            <p class="text-xs text-slate-400">點選正確的中文解釋來喚醒記憶：</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+            ${options.map(opt => `
+              <button onclick="handleRescueChoice(this, ${opt.id === current.id})" 
+                class="rescue-btn p-3 text-left border-2 custom-theme-border rounded-xl hover:opacity-80 transition text-xs sm:text-sm font-bold text-slate-700 active:scale-98">
+                ${opt.definition}
+              </button>
+            `).join('')}
+          </div>
+        `;
+      } 
+      // 3. ❌ 答錯/檢討時的「深入解釋卡片」+「💡 我看懂了，跳下一題」
+      else if (reviewMode === 'explain') {
+        container.innerHTML = `
+          <div class="flex justify-between items-center text-xs font-bold text-rose-600">
+            <span class="bg-rose-50 text-rose-700 px-3 py-1 rounded-full border border-rose-200">📌 深入檢討與釋義</span>
+            <span class="text-slate-400">明天會再次為你排程複習</span>
+          </div>
+
+          <div class="my-auto py-3 space-y-3">
+            <div class="text-center space-y-1">
+              <div class="flex items-center justify-center gap-2">
+                <h2 class="text-3xl font-black text-slate-800">${current.word}</h2>
+                <button onclick="speak('${current.word.replace(/'/g, "\\'")}')" class="p-1.5 custom-theme-light-bg custom-theme-text rounded-full hover:opacity-80 transition" title="朗讀發音">🔊</button>
+              </div>
+              <p class="text-lg font-black text-rose-600">${current.definition}</p>
+            </div>
+
             ${current.example ? `
-              <div class="text-left custom-theme-light-bg p-3.5 rounded-xl border custom-theme-border mt-2">
-                <p class="text-xs font-bold custom-theme-text mb-1">💬 情境例句與翻譯：</p>
-                <p class="text-xs text-slate-600 italic">"${current.example}"</p>
+              <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1 text-left">
+                <span class="text-[11px] font-bold custom-theme-text block">💬 情境語境例句：</span>
+                <p class="text-xs text-slate-700 leading-relaxed italic">"${current.example}"</p>
               </div>
             ` : ''}
+
+            <div class="bg-amber-50/80 p-2.5 rounded-xl border border-amber-200 text-center">
+              <p class="text-[11px] text-amber-800 font-medium">💡 記住這個用法，明天第一輪就會優先出現唷！</p>
+            </div>
           </div>
 
-          <div class="grid grid-cols-4 gap-2 pt-3 border-t custom-theme-border">
-            <button onclick="handleRate(0)" class="py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold rounded-xl text-xs border border-rose-200 transition active:scale-95">😭 忘記<br><span class="font-normal text-[10px]">1天後</span></button>
-            <button onclick="handleRate(1)" class="py-2.5 bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold rounded-xl text-xs border border-amber-200 transition active:scale-95">🥺 困難<br><span class="font-normal text-[10px]">縮短</span></button>
-            <button onclick="handleRate(2)" class="py-2.5 bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold rounded-xl text-xs border border-sky-200 transition active:scale-95">😊 良好<br><span class="font-normal text-[10px]">標準</span></button>
-            <button onclick="handleRate(3)" class="py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-xl text-xs border border-emerald-200 transition active:scale-95">🥳 簡單<br><span class="font-normal text-[10px]">延長</span></button>
-          </div>
+          <button onclick="finishExplainNext()" class="w-full py-3.5 custom-theme-bg text-white font-bold rounded-xl text-sm shadow-md transition-all duration-200 active:scale-98 flex items-center justify-center gap-1.5">
+            <span>💡 我看懂了，跳下一題</span>
+            <span>➔</span>
+          </button>
         `;
       }
     }
@@ -1178,6 +1247,7 @@
       renderCard();
     }
 
+    // 評分與救援觸發
     function handleRate(rating) {
       const dueWords = getDueWords();
       if (dueWords.length === 0) return;
@@ -1187,10 +1257,47 @@
 
       words = words.map(w => w.id === current.id ? updated : w);
       saveWords();
+
+      // 如果點選「忘記」，且庫存有足夠單字，進入救援四選一模式
+      if (rating === 0 && getActiveLangWords().length >= 4) {
+        reviewMode = 'rescue';
+        renderCard();
+      } else {
+        isFlipped = false;
+        reviewMode = 'normal';
+        renderCard();
+      }
+    }
+
+    // 忘記救援模式判斷
+    function handleRescueChoice(btn, isCorrect) {
+      const allBtns = document.querySelectorAll('.rescue-btn');
+      allBtns.forEach(b => b.disabled = true);
+
+      if (isCorrect) {
+        btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
+        setTimeout(() => {
+          isFlipped = false;
+          reviewMode = 'normal';
+          renderCard();
+        }, 1000);
+      } else {
+        btn.classList.add('bg-rose-500', 'text-white', 'border-rose-600');
+        setTimeout(() => {
+          reviewMode = 'explain';
+          renderCard();
+        }, 900);
+      }
+    }
+
+    // 檢討完成跳下一題
+    function finishExplainNext() {
       isFlipped = false;
+      reviewMode = 'normal';
       renderCard();
     }
 
+    // --- 📝 隨堂測驗功能 ---
     function showQuizStartScreen() {
       const currentList = getActiveLangWords();
       const container = document.getElementById('quiz-container');
@@ -1667,7 +1774,6 @@
       renderWordList();
     }
 
-    // --- 🗑️ 資源回收桶與單字刪除復原機制 ---
     function moveToTrash(id) {
       const target = words.find(w => w.id === id);
       if (!target) return;
