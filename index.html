@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>多語系記憶曲線單字庫</title>
+  <title>DailyVocab</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- 引入 10 款精選 Google Fonts 字體庫 -->
   <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fredoka:wght@500;600;700&family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&family=Kosugi+Maru&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Shippori+Mincho:wght@500;700;800&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
   
   <style>
@@ -76,7 +75,7 @@
     <!-- 頁首標題與統計 -->
     <header class="text-center py-1 space-y-1">
       <h1 class="text-2xl font-black custom-theme-text tracking-wide flex items-center justify-center gap-2 drop-shadow-xs">
-        <span>✨</span> 記憶曲線單字庫 <span>📚</span>
+        <span>✨</span> DailyVocab <span>📖</span>
       </h1>
       <div class="flex justify-center gap-3 text-xs font-semibold text-slate-600">
         <span>🏆 已精通: <b id="stat-mastered" class="custom-theme-text font-black">0</b></span>
@@ -1139,7 +1138,7 @@
     }
 
     // ==========================================
-    // 🎯 1. 複習卡片：四選一救援判斷
+    // 🎯 1. 複習卡片：四選一救援純鼓勵反饋
     // ==========================================
     function renderCard() {
       const dueWords = getDueWords();
@@ -1167,7 +1166,7 @@
         container.innerHTML = `
           <div class="flex justify-between items-center text-xs font-bold text-slate-400">
             <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full border border-amber-200">💡 忘記單字四選一提示</span>
-            <span class="text-slate-400">需要提示將自動排入明日加強</span>
+            <span class="text-slate-400">選出正確意思喚醒記憶</span>
           </div>
 
           <div class="my-auto text-center py-4 space-y-2">
@@ -1175,7 +1174,7 @@
               <h2 class="text-3xl sm:text-4xl font-black text-slate-800">${current.word}</h2>
               <button onclick="speak('${encodeURIComponent(current.word)}')" class="p-1.5 custom-theme-light-bg custom-theme-text rounded-full hover:opacity-80 transition" title="朗讀發音">🔊</button>
             </div>
-            <p class="text-xs text-slate-400 font-medium">選出正確的意思來喚醒記憶：</p>
+            <p class="text-xs text-slate-400 font-medium">選出正確的中文解釋：</p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
@@ -1186,7 +1185,7 @@
               </button>
             `).join('')}
           </div>
-          <div id="card-rescue-feedback" class="text-center min-h-[20px] text-xs font-bold mt-1"></div>
+          <div id="card-rescue-feedback" class="text-center min-h-[22px] text-xs font-bold mt-2"></div>
         `;
         return;
       }
@@ -1237,10 +1236,10 @@
           </div>
 
           <div class="grid grid-cols-4 gap-2 pt-3 border-t custom-theme-border">
-            <button onclick="handleRate(0)" class="py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold rounded-xl text-xs border border-rose-200 transition active:scale-95">😭 忘記<br><span class="font-normal text-[10px]">重置</span></button>
-            <button onclick="handleRate(1)" class="py-2.5 bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold rounded-xl text-xs border border-amber-200 transition active:scale-95">🥺 困難<br><span class="font-normal text-[10px]">縮短</span></button>
-            <button onclick="handleRate(2)" class="py-2.5 bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold rounded-xl text-xs border border-sky-200 transition active:scale-95">😊 良好<br><span class="font-normal text-[10px]">標準</span></button>
-            <button onclick="handleRate(3)" class="py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-xl text-xs border border-emerald-200 transition active:scale-95">🥳 簡單<br><span class="font-normal text-[10px]">延長</span></button>
+            <button onclick="handleRate(0)" class="py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold rounded-xl text-xs border border-rose-200 transition active:scale-95">😭 忘記</button>
+            <button onclick="handleRate(1)" class="py-2.5 bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold rounded-xl text-xs border border-amber-200 transition active:scale-95">🥺 困難</button>
+            <button onclick="handleRate(2)" class="py-2.5 bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold rounded-xl text-xs border border-sky-200 transition active:scale-95">😊 良好</button>
+            <button onclick="handleRate(3)" class="py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-xl text-xs border border-emerald-200 transition active:scale-95">🥳 簡單</button>
           </div>
         `;
       }
@@ -1277,12 +1276,12 @@
         words = words.map(w => w.id === current.id ? updated : w);
         saveWords();
 
-        feedback.innerHTML = `<span class="text-amber-600 font-bold">✨ 選對了！因借助了四選一提示，判定為「尚需加強」，近期會再次為你排程！</span>`;
+        feedback.innerHTML = `<span class="text-emerald-600 font-bold">🎉 太棒了！有回想起來就是很棒的進步，繼續保持！</span>`;
         setTimeout(() => {
           isFlipped = false;
           inCardRescueMode = false;
           renderCard();
-        }, 1200);
+        }, 1100);
       } else {
         btn.classList.add('bg-rose-500', 'text-white', 'border-rose-600');
         btn.disabled = true;
@@ -1291,7 +1290,7 @@
         words = words.map(w => w.id === current.id ? updated : w);
         saveWords();
 
-        feedback.innerHTML = `<span class="text-rose-500 font-bold">❌ 猜錯囉！已判定為「忘記」，明日將優先排程複習！請再試著找出正確意思。</span>`;
+        feedback.innerHTML = `<span class="text-rose-500 font-bold">💪 沒關係！多看幾次印象會更深刻，我們再試著選選看！</span>`;
       }
     }
 
@@ -1311,7 +1310,7 @@
     }
 
     // ==========================================
-    // 📝 2. 隨堂測驗：答錯時深入檢討 + 錯題重測機制
+    // 📝 2. 隨堂測驗：原地展開答錯檢討與錯題重測
     // ==========================================
     function showQuizStartScreen() {
       const currentList = getActiveLangWords();
@@ -1471,7 +1470,6 @@
       renderQuizQuestion();
     }
 
-    // 🎯 專屬錯題重測啟動函數
     function startRetryWrongQuiz() {
       if (!quizState.wrongList || quizState.wrongList.length === 0) return;
 
@@ -1502,70 +1500,6 @@
       progressBadge.textContent = `第 ${currentIndex + 1} / ${totalQuestions} 題`;
       progressBar.style.width = `${((currentIndex) / totalQuestions) * 100}%`;
 
-      if (quizState.inExplanation) {
-        const wrongChoice = quizState.lastUserChoice;
-        
-        let wrongDisplayHtml = '';
-        if (typeof wrongChoice === 'object' && wrongChoice !== null) {
-          wrongDisplayHtml = `
-            <div class="bg-rose-100/70 border border-rose-300 rounded-xl p-3 text-left space-y-1">
-              <span class="text-[11px] font-bold text-rose-800 flex items-center gap-1">
-                <span>❌</span> 你誤選的項目：
-              </span>
-              <div class="flex items-baseline gap-2">
-                <span class="font-black text-sm text-slate-800">${wrongChoice.word}</span>
-                <span class="text-xs font-bold text-rose-700">${wrongChoice.definition}</span>
-              </div>
-            </div>
-          `;
-        } else if (typeof wrongChoice === 'string') {
-          wrongDisplayHtml = `
-            <div class="bg-rose-100/70 border border-rose-300 rounded-xl p-3 text-left space-y-1">
-              <span class="text-[11px] font-bold text-rose-800 flex items-center gap-1">
-                <span>❌</span> 你的輸入：
-              </span>
-              <p class="font-mono font-bold text-sm text-rose-700">${wrongChoice || '(空白)'}</p>
-            </div>
-          `;
-        }
-
-        container.innerHTML = `
-          <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-5 space-y-4 text-center">
-            <div class="inline-flex items-center gap-1 text-xs font-bold text-rose-700 bg-white px-3 py-1 rounded-full border border-rose-200 shadow-xs">
-              <span>❌ 剛才這題答錯了，對照中文釐清混淆！</span>
-            </div>
-
-            <div class="space-y-2">
-              ${wrongDisplayHtml}
-
-              <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-3 text-left space-y-1">
-                <span class="text-[11px] font-bold text-emerald-800 flex items-center gap-1">
-                  <span>✅</span> 本題正確答案：
-                </span>
-                <div class="flex items-baseline gap-2">
-                  <span class="font-black text-sm text-slate-800">${target.word}</span>
-                  <span class="text-xs font-bold text-emerald-700">${target.definition}</span>
-                  <button onclick="speak('${encodeURIComponent(target.word)}')" class="p-0.5 text-emerald-700 hover:opacity-80 transition ml-auto text-xs">🔊 發音</button>
-                </div>
-              </div>
-            </div>
-
-            ${target.example ? `
-              <div class="bg-white p-3.5 rounded-xl border border-rose-200 text-left space-y-1 shadow-xs">
-                <span class="text-[11px] font-bold text-rose-700 block">💬 情境語境例句：</span>
-                <p class="text-xs text-slate-700 leading-relaxed italic">"${target.example}"</p>
-              </div>
-            ` : ''}
-
-            <button onclick="nextQuizQuestion()" class="w-full py-3.5 custom-theme-bg text-white font-bold rounded-xl text-sm shadow-md transition-all duration-200 active:scale-98 flex items-center justify-center gap-1.5">
-              <span>💡 我看懂了，跳下一題</span>
-              <span>➔</span>
-            </button>
-          </div>
-        `;
-        return;
-      }
-
       let activeType = 'choice';
       if (strategy === 'type') {
         activeType = selectedType;
@@ -1583,6 +1517,7 @@
         activeType = 'choice';
       }
 
+      // 1. 🔤 四選一
       if (activeType === 'choice') {
         const others = currentList.filter(w => w.id !== target.id).sort(() => 0.5 - Math.random()).slice(0, 3);
         const options = [target, ...others].sort(() => 0.5 - Math.random());
@@ -1596,15 +1531,18 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
             ${options.map(opt => `
-              <button onclick="handleQuizChoiceAnswer(this, ${opt.id === target.id}, '${opt.id}')" 
+              <button id="opt-${opt.id}" onclick="handleQuizChoiceAnswer(this, ${opt.id === target.id}, '${opt.id}')" 
                 class="quiz-opt-btn p-3.5 text-left border-2 custom-theme-border rounded-xl hover:opacity-80 transition text-sm font-bold text-slate-700 active:scale-98">
                 ${opt.definition}
               </button>
             `).join('')}
           </div>
-          <div id="quiz-feedback" class="text-center min-h-[24px]"></div>
+
+          <div id="quiz-inline-explanation" class="pt-2"></div>
         `;
-      } else if (activeType === 'cloze') {
+      } 
+      // 2. 🧩 例句克漏字
+      else if (activeType === 'cloze') {
         const regex = new RegExp(target.word, 'gi');
         const clozeSentence = target.example.replace(regex, ' [ _______ ] ');
 
@@ -1620,15 +1558,18 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
             ${options.map(opt => `
-              <button onclick="handleQuizChoiceAnswer(this, ${opt.id === target.id}, '${opt.id}')" 
+              <button id="opt-${opt.id}" onclick="handleQuizChoiceAnswer(this, ${opt.id === target.id}, '${opt.id}')" 
                 class="quiz-opt-btn p-3.5 text-center border-2 custom-theme-border rounded-xl hover:opacity-80 transition text-sm font-bold text-slate-800 active:scale-98">
                 ${opt.word}
               </button>
             `).join('')}
           </div>
-          <div id="quiz-feedback" class="text-center min-h-[24px]"></div>
+
+          <div id="quiz-inline-explanation" class="pt-2"></div>
         `;
-      } else if (activeType === 'spelling') {
+      } 
+      // 3. 📝 聽音拼寫
+      else if (activeType === 'spelling') {
         container.innerHTML = `
           <div class="text-center py-5 custom-theme-light-bg rounded-2xl border custom-theme-border space-y-2">
             <span class="text-xs custom-theme-text font-bold uppercase tracking-wider">📝 聽音拼寫填空</span>
@@ -1638,7 +1579,7 @@
             </button>
           </div>
 
-          <form onsubmit="handleQuizSpellingAnswer(event)" class="space-y-3 pt-2">
+          <form id="spelling-form" onsubmit="handleQuizSpellingAnswer(event)" class="space-y-3 pt-2">
             <input 
               id="quiz-spelling-input" 
               type="text" 
@@ -1648,11 +1589,12 @@
               placeholder="輸入外語拼寫..." 
               class="w-full text-center px-4 py-3 border-2 custom-theme-border rounded-xl text-lg font-bold focus:outline-none focus:ring-2"
             />
-            <button type="submit" class="w-full py-3 custom-theme-bg text-white font-bold rounded-xl text-sm shadow-md transition active:scale-98">
+            <button id="spelling-submit-btn" type="submit" class="w-full py-3 custom-theme-bg text-white font-bold rounded-xl text-sm shadow-md transition active:scale-98">
               送出答案 ✨
             </button>
           </form>
-          <div id="quiz-feedback" class="text-center min-h-[24px]"></div>
+
+          <div id="quiz-inline-explanation" class="pt-2"></div>
         `;
       }
     }
@@ -1661,64 +1603,134 @@
       const allBtns = document.querySelectorAll('.quiz-opt-btn');
       allBtns.forEach(b => b.disabled = true);
 
-      const feedback = document.getElementById('quiz-feedback');
       const target = quizState.queue[quizState.currentIndex];
       const chosenWord = words.find(w => w.id === chosenId) || null;
+      const explainContainer = document.getElementById('quiz-inline-explanation');
 
       if (isCorrect) {
         btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
-        feedback.innerHTML = `<span class="text-emerald-600 font-black text-sm">🎉 答對了！</span>`;
         quizState.correctCount += 1;
+        explainContainer.innerHTML = `<div class="text-center py-2 text-emerald-600 font-black text-sm animate-bounce">🎉 答對了！太厲害了！</div>`;
         setTimeout(() => {
           nextQuizQuestion();
-        }, 1000);
+        }, 900);
       } else {
         btn.classList.add('bg-rose-500', 'text-white', 'border-rose-600');
-        feedback.innerHTML = `<span class="text-rose-500 font-black text-sm">❌ 答錯了！即將進入深入檢討...</span>`;
         
-        quizState.lastUserChoice = chosenWord;
+        const correctBtn = document.getElementById(`opt-${target.id}`);
+        if (correctBtn) {
+          correctBtn.classList.add('bg-emerald-100', 'text-emerald-800', 'border-emerald-500');
+        }
+
         quizState.wrongList.push({
           target: target,
           userChoice: chosenWord
         });
-        
-        setTimeout(() => {
-          quizState.inExplanation = true;
-          renderQuizQuestion();
-        }, 900);
+
+        explainContainer.innerHTML = `
+          <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-4 space-y-3 mt-2 shadow-sm animate-fade-in">
+            <div class="flex items-center justify-between border-b border-rose-200 pb-2">
+              <span class="text-xs font-bold text-rose-700 flex items-center gap-1">❌ 答錯檢討</span>
+              <span class="text-[11px] text-slate-400">對照中文釐清混淆</span>
+            </div>
+
+            <div class="space-y-2">
+              <div class="bg-rose-100/70 border border-rose-300 rounded-xl p-2.5 text-left text-xs">
+                <span class="font-bold text-rose-800 block mb-0.5">❌ 你誤選的項目：</span>
+                <div class="flex items-baseline gap-2">
+                  <span class="font-black text-slate-800">${chosenWord ? chosenWord.word : ''}</span>
+                  <span class="font-bold text-rose-700">${chosenWord ? chosenWord.definition : '未選擇'}</span>
+                </div>
+              </div>
+
+              <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-left text-xs">
+                <span class="font-bold text-emerald-800 block mb-0.5">✅ 本題正確解答：</span>
+                <div class="flex items-baseline gap-2">
+                  <span class="font-black text-slate-800">${target.word}</span>
+                  <span class="font-bold text-emerald-700">${target.definition}</span>
+                  <button onclick="speak('${encodeURIComponent(target.word)}')" class="p-0.5 text-emerald-700 hover:opacity-80 transition ml-auto text-xs font-bold">🔊 發音</button>
+                </div>
+              </div>
+            </div>
+
+            ${target.example ? `
+              <div class="bg-white p-3 rounded-xl border border-rose-200 text-left space-y-1 shadow-xs">
+                <span class="text-[11px] font-bold text-rose-700 block">💬 語境例句與中文翻譯：</span>
+                <p class="text-xs text-slate-700 leading-relaxed italic">"${target.example}"</p>
+              </div>
+            ` : ''}
+
+            <button onclick="nextQuizQuestion()" class="w-full py-3 custom-theme-bg text-white font-bold rounded-xl text-xs shadow-md transition-all duration-200 active:scale-98 flex items-center justify-center gap-1.5 mt-2">
+              <span>💡 我看懂了，跳下一題</span>
+              <span>➔</span>
+            </button>
+          </div>
+        `;
       }
     }
 
     function handleQuizSpellingAnswer(e) {
       e.preventDefault();
       const input = document.getElementById('quiz-spelling-input');
+      const submitBtn = document.getElementById('spelling-submit-btn');
       const userVal = input.value.trim();
       const target = quizState.queue[quizState.currentIndex];
-      const feedback = document.getElementById('quiz-feedback');
+      const explainContainer = document.getElementById('quiz-inline-explanation');
 
       input.disabled = true;
+      if (submitBtn) submitBtn.disabled = true;
 
       if (userVal.toLowerCase() === target.word.trim().toLowerCase()) {
         input.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-700');
-        feedback.innerHTML = `<span class="text-emerald-600 font-black text-sm">🎉 拼寫完全正確！太厲害了！</span>`;
         quizState.correctCount += 1;
+        explainContainer.innerHTML = `<div class="text-center py-2 text-emerald-600 font-black text-sm animate-bounce">🎉 拼寫完全正確！太強了！</div>`;
         setTimeout(() => {
           nextQuizQuestion();
-        }, 1000);
+        }, 900);
       } else {
         input.classList.add('bg-rose-50', 'border-rose-500', 'text-rose-700');
-        feedback.innerHTML = `<span class="text-rose-500 font-black text-sm">❌ 拼錯了！即將進入深入檢討...</span>`;
         
-        quizState.lastUserChoice = userVal;
         quizState.wrongList.push({
           target: target,
           userChoice: userVal
         });
 
-        setTimeout(() => {
-          quizState.inExplanation = true;
-          renderQuizQuestion();
-        }, 900);
+        explainContainer.innerHTML = `
+          <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-4 space-y-3 mt-2 shadow-sm animate-fade-in">
+            <div class="flex items-center justify-between border-b border-rose-200 pb-2">
+              <span class="text-xs font-bold text-rose-700 flex items-center gap-1">❌ 拼寫答錯檢討</span>
+              <span class="text-[11px] text-slate-400">對照正確拼寫</span>
+            </div>
+
+            <div class="space-y-2">
+              <div class="bg-rose-100/70 border border-rose-300 rounded-xl p-2.5 text-left text-xs">
+                <span class="font-bold text-rose-800 block mb-0.5">❌ 你的輸入：</span>
+                <p class="font-mono font-bold text-rose-700 text-sm">${userVal || '(空白)'}</p>
+              </div>
+
+              <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-left text-xs">
+                <span class="font-bold text-emerald-800 block mb-0.5">✅ 正確拼寫與釋義：</span>
+                <div class="flex items-baseline gap-2">
+                  <span class="font-mono font-black text-slate-800 text-sm">${target.word}</span>
+                  <span class="font-bold text-emerald-700">${target.definition}</span>
+                  <button onclick="speak('${encodeURIComponent(target.word)}')" class="p-0.5 text-emerald-700 hover:opacity-80 transition ml-auto text-xs font-bold">🔊 發音</button>
+                </div>
+              </div>
+            </div>
+
+            ${target.example ? `
+              <div class="bg-white p-3 rounded-xl border border-rose-200 text-left space-y-1 shadow-xs">
+                <span class="text-[11px] font-bold text-rose-700 block">💬 語境例句與中文翻譯：</span>
+                <p class="text-xs text-slate-700 leading-relaxed italic">"${target.example}"</p>
+              </div>
+            ` : ''}
+
+            <button onclick="nextQuizQuestion()" class="w-full py-3 custom-theme-bg text-white font-bold rounded-xl text-xs shadow-md transition-all duration-200 active:scale-98 flex items-center justify-center gap-1.5 mt-2">
+              <span>💡 我看懂了，跳下一題</span>
+              <span>➔</span>
+            </button>
+          </div>
+        `;
       }
     }
 
