@@ -6,7 +6,6 @@
   <title>多語系記憶曲線單字庫</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- 引入 10 款精選 Google Fonts 字體庫 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fredoka:wght@500;600;700&family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&family=Kosugi+Maru&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Shippori+Mincho:wght@500;700;800&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
   
@@ -20,7 +19,7 @@
       --bg-gradient-via: #f1f5f9;
       --bg-gradient-to: #f8fafc;
       --card-radius: 1.5rem;
-      --app-font-family: 'Noto Sans TC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --app-font-family: 'Zen Maru Gothic', 'Noto Sans TC', sans-serif;
     }
     body {
       font-family: var(--app-font-family);
@@ -104,9 +103,9 @@
       </button>
     </nav>
 
-    <!-- 1. 🎯 複習分頁 -->
+    <!-- 1. 複習分頁 -->
     <section id="tab-review" class="space-y-4">
-      <main id="card-container" class="bg-white/95 backdrop-blur-md theme-radius shadow-lg border-2 custom-theme-border p-6 sm:p-8 min-h-[360px] flex flex-col justify-between transition-all duration-300">
+      <main id="card-container" class="bg-white/95 backdrop-blur-md theme-radius shadow-lg border-2 custom-theme-border p-6 sm:p-8 min-h-[350px] flex flex-col justify-between transition-all duration-300">
         <!-- 由 JS 動態渲染 -->
       </main>
     </section>
@@ -136,9 +135,15 @@
           <h2 class="text-base font-black custom-theme-text flex items-center gap-1.5">
             <span>📖</span> 單字分類抽屜
           </h2>
-          <button onclick="reclassifyAllWords()" class="text-xs custom-theme-light-bg custom-theme-text px-3 py-1.5 rounded-xl border custom-theme-border font-bold hover:opacity-80 transition active:scale-95" title="依最新規則重新自動識別所有通用單字">
-            🪄 重新自動分類
-          </button>
+          <div class="flex items-center gap-1.5">
+            <button onclick="openTrashModal()" class="text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 px-2.5 py-1.5 rounded-xl border border-rose-200 font-bold transition active:scale-95 flex items-center gap-1" title="查看並復原已刪除的單字">
+              <span>🗑️ 回收桶</span>
+              <b id="trash-count-badge" class="bg-rose-200 text-rose-900 text-[10px] px-1.5 py-0.2 rounded-full">0</b>
+            </button>
+            <button onclick="reclassifyAllWords()" class="text-xs custom-theme-light-bg custom-theme-text px-2.5 py-1.5 rounded-xl border custom-theme-border font-bold hover:opacity-80 transition active:scale-95" title="依最新規則重新自動識別所有通用單字">
+              🪄 分類
+            </button>
+          </div>
         </div>
         <input 
           id="search-input" 
@@ -256,11 +261,11 @@
         </div>
 
         <div class="pt-2 border-t border-slate-100">
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">🔤 介面字體風格 (預設俐落黑體)：</label>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">🔤 介面字體風格 (精選 10 款)：</label>
           <select id="custom-font-select" onchange="applyCustomFont(this.value)" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs bg-white font-medium focus:outline-none focus:ring-2 custom-theme-border">
-            <option value="'Noto Sans TC', 'Inter', sans-serif">✨ 俐落黑體 / 清晰簡約 (Noto Sans TC - 預設)</option>
-            <option value="'Inter', 'Noto Sans TC', sans-serif">💎 國際質感黑體 / 簡潔 UI (Inter)</option>
             <option value="'Zen Maru Gothic', 'Noto Sans TC', sans-serif">🌸 圓體 / Q 萌圓潤 (Zen Maru Gothic)</option>
+            <option value="'Noto Sans TC', 'Inter', sans-serif">✨ 俐落黑體 / 清晰易讀 (Noto Sans TC)</option>
+            <option value="'Inter', 'Noto Sans TC', sans-serif">💎 國際質感黑體 / 頂級 UI (Inter)</option>
             <option value="'Noto Serif TC', serif">📖 雅緻宋體 / 書卷質感 (Noto Serif TC)</option>
             <option value="'Shippori Mincho', 'Noto Serif TC', serif">🖋️ 復古明體 / 日系詩意 (Shippori Mincho)</option>
             <option value="'Caveat', 'Zen Maru Gothic', cursive">☕ 隨性手寫 / 手帳筆記 (Caveat)</option>
@@ -271,7 +276,6 @@
           </select>
         </div>
 
-        <!-- 自由調色與背景自訂區 -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
           <div>
             <div class="flex items-center justify-between mb-1">
@@ -307,7 +311,7 @@
         <h3 class="text-sm font-black custom-theme-text flex items-center gap-1.5">
           <span>💾</span> 單字本備份與跨裝置同步
         </h3>
-        <p class="text-xs text-slate-500">下載備份檔（包含所有語言分類與記憶進度），換手機隨時一鍵還原。</p>
+        <p class="text-xs text-slate-500">下載備份檔（包含所有語言分類、學習進度與回收桶），換手機隨時一鍵還原。</p>
         <div class="flex gap-2">
           <button onclick="exportData()" class="flex-1 py-2.5 custom-theme-light-bg custom-theme-text font-bold rounded-xl text-xs border custom-theme-border transition active:scale-95">
             📥 下載備份 (JSON)
@@ -320,6 +324,32 @@
       </div>
     </section>
 
+  </div>
+
+  <!-- 🗑️ 資源回收桶彈窗 -->
+  <div id="trash-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white theme-radius shadow-2xl border-2 custom-theme-border max-w-md w-full p-6 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3 custom-theme-border">
+        <div class="flex items-center gap-2">
+          <h3 class="text-lg font-black text-rose-700">🗑️ 單字資源回收桶</h3>
+          <span id="trash-modal-count" class="text-xs font-bold text-slate-400">0 個項目</span>
+        </div>
+        <button onclick="closeTrashModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold">✕</button>
+      </div>
+
+      <p class="text-xs text-slate-500">不小心刪錯的單字可以在這裡一鍵復原回到單字庫中。</p>
+
+      <div id="trash-list-container" class="space-y-2.5 max-h-64 overflow-y-auto pr-1"></div>
+
+      <div class="flex gap-2 pt-2 border-t border-slate-100">
+        <button onclick="clearAllTrash()" class="py-2.5 px-4 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold rounded-xl text-xs transition active:scale-95">
+          徹底清空回收桶
+        </button>
+        <button onclick="closeTrashModal()" class="flex-1 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-200 transition active:scale-95">
+          關閉
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- 編輯單字彈窗 -->
@@ -376,32 +406,17 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    // 🎨 預設改為「俐落黑體（Noto Sans TC）」
-    function loadAndMigrateThemeConfig() {
-      const MASTER_THEME_KEY = 'vocab_app_master_theme_v2';
-      let currentCfg = JSON.parse(localStorage.getItem(MASTER_THEME_KEY));
-
-      if (currentCfg && currentCfg.primary) {
-        return currentCfg;
-      }
-
-      const defaultTheme = {
-        preset: 'slate',
-        primary: '#334155',
-        light: '#f1f5f9',
-        border: '#cbd5e1',
-        from: '#e2e8f0',
-        via: '#f1f5f9',
-        to: '#f8fafc',
-        radius: '1.5rem',
-        font: "'Noto Sans TC', 'Inter', sans-serif"
-      };
-
-      localStorage.setItem(MASTER_THEME_KEY, JSON.stringify(defaultTheme));
-      return defaultTheme;
-    }
-
-    let userTheme = loadAndMigrateThemeConfig();
+    let userTheme = JSON.parse(localStorage.getItem('vocab_theme_cfg_v14')) || {
+      preset: 'slate',
+      primary: '#334155',
+      light: '#f1f5f9',
+      border: '#cbd5e1',
+      from: '#e2e8f0',
+      via: '#f1f5f9',
+      to: '#f8fafc',
+      radius: '1.5rem',
+      font: "'Zen Maru Gothic', 'Noto Sans TC', sans-serif"
+    };
 
     function applyThemeConfig(cfg) {
       const root = document.documentElement;
@@ -412,16 +427,16 @@
       root.style.setProperty('--bg-gradient-via', cfg.via);
       root.style.setProperty('--bg-gradient-to', cfg.to);
       root.style.setProperty('--card-radius', cfg.radius || '1.5rem');
-      root.style.setProperty('--app-font-family', cfg.font || "'Noto Sans TC', 'Inter', sans-serif");
+      root.style.setProperty('--app-font-family', cfg.font || "'Zen Maru Gothic', 'Noto Sans TC', sans-serif");
 
       document.getElementById('custom-color-picker').value = cfg.primary;
       document.getElementById('custom-color-hex').textContent = cfg.primary;
       document.getElementById('custom-bg-picker').value = cfg.from.startsWith('#') ? cfg.from : '#e2e8f0';
       document.getElementById('custom-bg-hex').textContent = cfg.from.startsWith('#') ? cfg.from : '自動顯色';
       document.getElementById('custom-radius-select').value = cfg.radius || '1.5rem';
-      document.getElementById('custom-font-select').value = cfg.font || "'Noto Sans TC', 'Inter', sans-serif";
+      document.getElementById('custom-font-select').value = cfg.font || "'Zen Maru Gothic', 'Noto Sans TC', sans-serif";
 
-      localStorage.setItem('vocab_app_master_theme_v2', JSON.stringify(cfg));
+      localStorage.setItem('vocab_theme_cfg_v14', JSON.stringify(cfg));
     }
 
     function applyPresetTheme(name) {
@@ -663,44 +678,56 @@
       }
     ];
 
-    function loadAndMigrateAllWords() {
+    // ==========================================
+    // 🌟 一次性安全遷移（永久修復重複撈回 Bug） 🌟
+    // ==========================================
+    function loadAndInitWords() {
       const STORAGE_KEY = 'vocab_app_master_words_v1';
-      let masterWords = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      const MIGRATION_FLAG = 'vocab_migration_completed_flag';
 
-      const legacyKeys = [
-        'toeic_multi_words_v19', 'toeic_multi_words_v18', 'toeic_multi_words_v17', 'toeic_multi_words_v16', 'toeic_multi_words_v15',
-        'toeic_multi_words_v14', 'toeic_multi_words_v13', 'toeic_multi_words_v12', 'toeic_multi_words_v11',
-        'toeic_multi_words_v10', 'toeic_multi_words_v9', 'toeic_multi_words_v8', 'toeic_multi_words_v7',
-        'toeic_multi_words_v6', 'toeic_multi_words_v5', 'toeic_multi_words_v4', 'toeic_words_v3', 'toeic_words_v2', 'toeic_words'
-      ];
+      let masterWords = JSON.parse(localStorage.getItem(STORAGE_KEY));
 
-      legacyKeys.forEach(k => {
-        try {
-          const oldData = JSON.parse(localStorage.getItem(k));
-          if (Array.isArray(oldData) && oldData.length > 0) {
-            oldData.forEach(item => {
-              const exists = masterWords.some(w => w.word.toLowerCase() === (item.word || '').toLowerCase());
-              if (!exists && item.word) {
-                masterWords.push(item);
-              }
-            });
-          }
-        } catch(e) {}
-      });
+      // 若未曾完成遷移，執行一次歷史數據撈取
+      if (!localStorage.getItem(MIGRATION_FLAG)) {
+        if (!masterWords || !Array.isArray(masterWords)) masterWords = [];
 
-      if (masterWords.length === 0) {
-        masterWords = DEFAULT_WORDS;
+        const legacyKeys = [
+          'toeic_multi_words_v19', 'toeic_multi_words_v18', 'toeic_multi_words_v17', 'toeic_multi_words_v16', 'toeic_multi_words_v15',
+          'toeic_multi_words_v14', 'toeic_multi_words_v13', 'toeic_multi_words_v12', 'toeic_multi_words_v11',
+          'toeic_multi_words_v10', 'toeic_multi_words_v9', 'toeic_multi_words_v8', 'toeic_multi_words_v7',
+          'toeic_multi_words_v6', 'toeic_multi_words_v5', 'toeic_multi_words_v4', 'toeic_words_v3', 'toeic_words_v2', 'toeic_words'
+        ];
+
+        legacyKeys.forEach(k => {
+          try {
+            const oldData = JSON.parse(localStorage.getItem(k));
+            if (Array.isArray(oldData) && oldData.length > 0) {
+              oldData.forEach(item => {
+                const exists = masterWords.some(w => w.word.toLowerCase() === (item.word || '').toLowerCase());
+                if (!exists && item.word) {
+                  masterWords.push(item);
+                }
+              });
+            }
+          } catch(e) {}
+        });
+
+        if (masterWords.length === 0) {
+          masterWords = DEFAULT_WORDS;
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(masterWords));
+        localStorage.setItem(MIGRATION_FLAG, 'true'); // 標記已完成，永不再重複掃描舊版
       }
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(masterWords));
-      return masterWords;
+      return masterWords || DEFAULT_WORDS;
     }
 
-    let words = loadAndMigrateAllWords();
+    let words = loadAndInitWords();
+    let trashWords = JSON.parse(localStorage.getItem('vocab_app_trash_words_v1')) || [];
     let activeLang = localStorage.getItem('vocab_active_lang') || 'en-US';
     let selectedTag = 'ALL';
     let isFlipped = false;
-    let isHintActive = false;
     let currentTab = 'review';
     let debounceTimer = null;
     let selectedPOSSet = new Set(['v.']);
@@ -732,6 +759,16 @@
     function saveWords() {
       localStorage.setItem('vocab_app_master_words_v1', JSON.stringify(words));
       updateStats();
+    }
+
+    function saveTrash() {
+      localStorage.setItem('vocab_app_trash_words_v1', JSON.stringify(trashWords));
+      updateTrashBadge();
+    }
+
+    function updateTrashBadge() {
+      const badge = document.getElementById('trash-count-badge');
+      if (badge) badge.textContent = trashWords.length;
     }
 
     function renderPOSBadges() {
@@ -878,7 +915,7 @@
 
           renderSuggestions(suggestions);
         } catch (e) {
-          console.log('詞典 API 備援中');
+          console.log('辭典 API 備援中');
         } finally {
           spinner.classList.add('hidden');
         }
@@ -971,9 +1008,9 @@
       document.getElementById('quiz-lang-label').textContent = LANG_NAMES[lang] || lang;
 
       isFlipped = false;
-      isHintActive = false;
       updateStats();
       renderPOSBadges();
+      updateTrashBadge();
       
       if (currentTab === 'review') renderCard();
       if (currentTab === 'quiz') showQuizStartScreen();
@@ -1006,6 +1043,7 @@
       document.getElementById('stat-due').textContent = due;
       document.getElementById('stat-mastered').textContent = mastered;
       document.getElementById('stat-total').textContent = currentList.length;
+      updateTrashBadge();
     }
 
     function speak(text) {
@@ -1033,11 +1071,7 @@
         }
       });
 
-      if (tab === 'review') {
-        isFlipped = false;
-        isHintActive = false;
-        renderCard();
-      }
+      if (tab === 'review') renderCard();
       if (tab === 'quiz') showQuizStartScreen();
       if (tab === 'list') renderWordList();
       if (tab === 'add') renderPOSBadges();
@@ -1075,7 +1109,6 @@
       const dueWords = getDueWords();
       const container = document.getElementById('card-container');
       const langName = LANG_NAMES[activeLang] || activeLang;
-      const currentList = getActiveLangWords();
 
       if (dueWords.length === 0) {
         container.innerHTML = `
@@ -1090,38 +1123,6 @@
 
       const current = dueWords[0];
 
-      if (isHintActive) {
-        const others = currentList.filter(w => w.id !== current.id).sort(() => 0.5 - Math.random()).slice(0, 3);
-        const options = [current, ...others].sort(() => 0.5 - Math.random());
-
-        container.innerHTML = `
-          <div class="flex justify-between items-center text-xs font-bold text-slate-400">
-            <span class="custom-theme-light-bg custom-theme-text px-3 py-1 rounded-full border custom-theme-border">${current.tag || '#生活職場通用'}</span>
-            <span class="text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full font-bold">💡 提示辨識模式</span>
-          </div>
-
-          <div class="text-center py-4 space-y-2">
-            <h2 class="text-3xl sm:text-4xl font-black text-slate-800 tracking-wide">${current.word}</h2>
-            <button onclick="speak('${current.word.replace(/'/g, "\\'")}')" class="text-xs custom-theme-text font-bold inline-flex items-center gap-1">🔊 播放發音</button>
-            <p class="text-xs text-slate-400">請選出最符合該單字的中文解釋：</p>
-          </div>
-
-          <div class="grid grid-cols-1 gap-2 py-1">
-            ${options.map(opt => `
-              <button onclick="handleHintChoice(this, ${opt.id === current.id})" 
-                class="hint-opt-btn p-3 text-left border-2 custom-theme-border rounded-xl hover:opacity-90 transition text-xs font-bold text-slate-700 active:scale-98">
-                ${opt.definition}
-              </button>
-            `).join('')}
-          </div>
-
-          <div class="pt-2 text-center">
-            <button onclick="flipCard()" class="text-xs text-slate-400 hover:text-slate-600 underline">還是想不起來？直接翻開答案 📖</button>
-          </div>
-        `;
-        return;
-      }
-
       if (!isFlipped) {
         container.innerHTML = `
           <div class="flex justify-between items-center text-xs font-bold text-slate-400">
@@ -1134,17 +1135,12 @@
               <h2 class="text-3xl sm:text-5xl font-black text-slate-800 tracking-wide">${current.word}</h2>
               <button onclick="speak('${current.word.replace(/'/g, "\\'")}')" class="p-2 custom-theme-light-bg custom-theme-text rounded-full hover:opacity-80 transition active:scale-95" title="朗讀發音">🔊</button>
             </div>
-            <p class="text-xs text-slate-400 font-medium mt-3">主動回想中文意思，加深大腦記憶 🧠</p>
+            <p class="text-xs text-slate-400 font-medium mt-3">點擊下方按鈕翻開查看釋義 📖</p>
           </div>
 
-          <div class="space-y-2">
-            <button onclick="flipCard()" class="w-full py-3.5 custom-theme-bg text-white font-bold rounded-xl text-sm shadow-md transition-all duration-200 active:scale-98">
-              ✨ 翻開看中文與例句
-            </button>
-            <button onclick="openHintMode()" class="w-full py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold rounded-xl text-xs border border-amber-200 transition active:scale-98 flex items-center justify-center gap-1">
-              <span>💡</span> 想不起來？給我四選一提示
-            </button>
-          </div>
+          <button onclick="flipCard()" class="w-full py-3.5 custom-theme-bg text-white font-bold rounded-xl text-sm shadow-md transition-all duration-200 active:scale-98">
+            ✨ 翻開看中文與例句
+          </button>
         `;
       } else {
         container.innerHTML = `
@@ -1177,37 +1173,8 @@
       }
     }
 
-    function openHintMode() {
-      const currentList = getActiveLangWords();
-      if (currentList.length < 4) {
-        alert('單字庫總數少於 4 個，無法產生干擾提示選項，請直接翻開答案唷！');
-        flipCard();
-        return;
-      }
-      isHintActive = true;
-      renderCard();
-    }
-
-    function handleHintChoice(btn, isCorrect) {
-      const allBtns = document.querySelectorAll('.hint-opt-btn');
-      allBtns.forEach(b => b.disabled = true);
-
-      if (isCorrect) {
-        btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
-        setTimeout(() => {
-          handleRate(1);
-        }, 800);
-      } else {
-        btn.classList.add('bg-rose-500', 'text-white', 'border-rose-600');
-        setTimeout(() => {
-          handleRate(0);
-        }, 1100);
-      }
-    }
-
     function flipCard() {
       isFlipped = true;
-      isHintActive = false;
       renderCard();
     }
 
@@ -1221,7 +1188,6 @@
       words = words.map(w => w.id === current.id ? updated : w);
       saveWords();
       isFlipped = false;
-      isHintActive = false;
       renderCard();
     }
 
@@ -1381,20 +1347,6 @@
       renderQuizQuestion();
     }
 
-    function startRetryWrongQuiz() {
-      if (quizState.wrongList.length === 0) return;
-      const wrongItems = [...quizState.wrongList];
-      
-      quizState.queue = wrongItems.sort(() => 0.5 - Math.random());
-      quizState.currentIndex = 0;
-      quizState.correctCount = 0;
-      quizState.wrongList = [];
-      quizState.totalQuestions = wrongItems.length;
-
-      document.getElementById('quiz-progress-bar-container').classList.remove('hidden');
-      renderQuizQuestion();
-    }
-
     function renderQuizQuestion() {
       const container = document.getElementById('quiz-container');
       const progressBadge = document.getElementById('quiz-progress-badge');
@@ -1435,9 +1387,9 @@
             <button onclick="speak('${target.word.replace(/'/g, "\\'")}')" class="text-xs custom-theme-text mt-1.5 font-bold hover:opacity-80">🔊 播放發音</button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2" id="quiz-options-box">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
             ${options.map(opt => `
-              <button onclick="handleChoiceAnswer(this, ${opt.id === target.id}, '${opt.word.replace(/'/g, "\\'")}', '${opt.definition.replace(/'/g, "\\'")}')" 
+              <button onclick="handleChoiceAnswer(this, ${opt.id === target.id})" 
                 class="quiz-opt-btn p-3.5 text-left border-2 custom-theme-border rounded-xl hover:opacity-80 transition text-sm font-bold text-slate-700 active:scale-98">
                 ${opt.definition}
               </button>
@@ -1459,9 +1411,9 @@
             <p class="text-xs text-slate-500 font-medium">釋義提示：${target.definition}</p>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2" id="quiz-options-box">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
             ${options.map(opt => `
-              <button onclick="handleChoiceAnswer(this, ${opt.id === target.id}, '${opt.word.replace(/'/g, "\\'")}', '${opt.definition.replace(/'/g, "\\'")}')" 
+              <button onclick="handleChoiceAnswer(this, ${opt.id === target.id})" 
                 class="quiz-opt-btn p-3.5 text-center border-2 custom-theme-border rounded-xl hover:opacity-80 transition text-sm font-bold text-slate-800 active:scale-98">
                 ${opt.word}
               </button>
@@ -1489,7 +1441,7 @@
               placeholder="輸入外語拼寫..." 
               class="w-full text-center px-4 py-3 border-2 custom-theme-border rounded-xl text-lg font-bold focus:outline-none focus:ring-2"
             />
-            <button type="submit" id="quiz-spelling-submit-btn" class="w-full py-3 custom-theme-bg text-white font-bold rounded-xl text-sm shadow-md transition active:scale-98">
+            <button type="submit" class="w-full py-3 custom-theme-bg text-white font-bold rounded-xl text-sm shadow-md transition active:scale-98">
               送出答案 ✨
             </button>
           </form>
@@ -1498,7 +1450,7 @@
       }
     }
 
-    function handleChoiceAnswer(btn, isCorrect, selectedWord, selectedDef) {
+    function handleChoiceAnswer(btn, isCorrect) {
       const allBtns = document.querySelectorAll('.quiz-opt-btn');
       allBtns.forEach(b => b.disabled = true);
 
@@ -1507,80 +1459,51 @@
 
       if (isCorrect) {
         btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
-        feedback.innerHTML = `<div class="pt-2 text-emerald-600 font-black text-sm">🎉 答對了！太棒了！</div>`;
+        feedback.innerHTML = `<span class="text-emerald-600 font-black text-sm">🎉 答對了！</span>`;
         quizState.correctCount += 1;
-        setTimeout(() => {
-          proceedToNextQuestion();
-        }, 1100);
       } else {
         btn.classList.add('bg-rose-500', 'text-white', 'border-rose-600');
+        feedback.innerHTML = `<span class="text-rose-500 font-black text-sm">❌ 答錯了！正確是：${target.word} (${target.definition})</span>`;
         quizState.wrongList.push(target);
-
-        feedback.innerHTML = `
-          <div class="mt-3 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-left space-y-2 shadow-sm animate-fade-in">
-            <div class="flex items-center gap-1.5 text-rose-600 font-black text-xs">
-              <span>❌ 答錯解析</span>
-            </div>
-            <div class="text-xs space-y-1 text-slate-700">
-              <p>🎯 本題目標：<b class="text-slate-900">${target.word}</b> 👉 <span class="custom-theme-text font-bold">${target.definition}</span></p>
-              <p class="text-slate-500">🧐 混淆辨析：你選的 <b class="text-rose-600">${selectedWord}</b> 意思是「${selectedDef}」</p>
-              ${target.example ? `<p class="text-[11px] text-slate-500 italic bg-white/70 p-2 rounded-xl border border-rose-100 mt-1">💬 例句：${target.example}</p>` : ''}
-            </div>
-            <button onclick="proceedToNextQuestion()" class="w-full mt-2 py-2.5 custom-theme-bg text-white font-bold rounded-xl text-xs shadow-sm hover:opacity-90 transition active:scale-95 flex items-center justify-center gap-1">
-              <span>➡️</span> 我看懂了，下一題
-            </button>
-          </div>
-        `;
       }
+
+      setTimeout(() => {
+        quizState.currentIndex += 1;
+        if (quizState.currentIndex < quizState.totalQuestions) {
+          renderQuizQuestion();
+        } else {
+          showQuizSummary();
+        }
+      }, 1200);
     }
 
     function handleSpellingAnswer(e) {
       e.preventDefault();
       const input = document.getElementById('quiz-spelling-input');
-      const submitBtn = document.getElementById('quiz-spelling-submit-btn');
       const userVal = input.value.trim().toLowerCase();
       const target = quizState.queue[quizState.currentIndex];
       const feedback = document.getElementById('quiz-feedback');
 
       input.disabled = true;
-      if (submitBtn) submitBtn.classList.add('hidden');
 
       if (userVal === target.word.trim().toLowerCase()) {
         input.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-700');
-        feedback.innerHTML = `<div class="pt-2 text-emerald-600 font-black text-sm">🎉 拼寫完全正確！太厲害了！</div>`;
+        feedback.innerHTML = `<span class="text-emerald-600 font-black text-sm">🎉 拼寫完全正確！太厲害了！</span>`;
         quizState.correctCount += 1;
-        setTimeout(() => {
-          proceedToNextQuestion();
-        }, 1100);
       } else {
         input.classList.add('bg-rose-50', 'border-rose-500', 'text-rose-700');
+        feedback.innerHTML = `<span class="text-rose-500 font-black text-sm">❌ 拼錯囉！正確拼法為：<b class="underline">${target.word}</b></span>`;
         quizState.wrongList.push(target);
-
-        feedback.innerHTML = `
-          <div class="mt-3 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-left space-y-2 shadow-sm">
-            <div class="flex items-center gap-1.5 text-rose-600 font-black text-xs">
-              <span>❌ 拼寫錯誤解析</span>
-            </div>
-            <div class="text-xs space-y-1 text-slate-700">
-              <p>🎯 正確拼寫：<b class="text-emerald-700 text-sm font-black underline">${target.word}</b></p>
-              <p>✍️ 你的輸入：<s class="text-rose-500">${userVal || '（未填寫）'}</s></p>
-              <p class="text-slate-600">📖 釋義：${target.definition}</p>
-            </div>
-            <button onclick="proceedToNextQuestion()" class="w-full mt-2 py-2.5 custom-theme-bg text-white font-bold rounded-xl text-xs shadow-sm hover:opacity-90 transition active:scale-95 flex items-center justify-center gap-1">
-              <span>➡️</span> 記住正確拼寫，下一題
-            </button>
-          </div>
-        `;
       }
-    }
 
-    function proceedToNextQuestion() {
-      quizState.currentIndex += 1;
-      if (quizState.currentIndex < quizState.totalQuestions) {
-        renderQuizQuestion();
-      } else {
-        showQuizSummary();
-      }
+      setTimeout(() => {
+        quizState.currentIndex += 1;
+        if (quizState.currentIndex < quizState.totalQuestions) {
+          renderQuizQuestion();
+        } else {
+          showQuizSummary();
+        }
+      }, 1400);
     }
 
     function showQuizSummary() {
@@ -1645,7 +1568,7 @@
           ${wrongList.length > 0 ? `
             <div class="text-left bg-rose-50/70 border border-rose-100 rounded-2xl p-3.5 space-y-2 max-w-sm mx-auto">
               <span class="text-xs font-bold text-rose-600 flex items-center gap-1">
-                <span>📌</span> 本輪錯題清單 (${wrongList.length} 題)：
+                <span>📌</span> 本輪錯題複習 (${wrongList.length} 題)：
               </span>
               <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
                 ${wrongList.map(w => `
@@ -1658,20 +1581,13 @@
             </div>
           ` : ''}
 
-          <div class="space-y-2 max-w-xs mx-auto pt-2">
-            ${wrongList.length > 0 ? `
-              <button onclick="startRetryWrongQuiz()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs shadow-md transition active:scale-95 flex items-center justify-center gap-1">
-                <span>🎯</span> 專攻本次錯題 (${wrongList.length} 題)
-              </button>
-            ` : ''}
-            <div class="flex gap-2">
-              <button onclick="showQuizStartScreen()" class="flex-1 py-2.5 custom-theme-bg text-white font-bold rounded-xl text-xs shadow-sm hover:opacity-90 transition active:scale-95">
-                🔄 重新測驗
-              </button>
-              <button onclick="switchTab('review')" class="flex-1 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-200 transition active:scale-95">
-                🎯 回複習卡片
-              </button>
-            </div>
+          <div class="flex gap-2 max-w-xs mx-auto pt-2">
+            <button onclick="showQuizStartScreen()" class="flex-1 py-3 custom-theme-bg text-white font-bold rounded-xl text-xs shadow-sm hover:opacity-90 transition active:scale-95">
+              🔄 調整設定重測
+            </button>
+            <button onclick="switchTab('review')" class="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs hover:bg-slate-200 transition active:scale-95">
+              🎯 回去複習卡片
+            </button>
           </div>
         </div>
       `;
@@ -1729,7 +1645,7 @@
                 <button onclick="speak('${w.word.replace(/'/g, "\\'")}')" class="p-1.5 text-slate-400 hover:custom-theme-text transition" title="發音">🔊</button>
                 <button onclick="openEditModal('${w.id}')" class="p-1.5 text-slate-400 hover:text-sky-500 transition text-xs" title="修改內容">✏️</button>
                 <button onclick="resetWordProgress('${w.id}')" class="p-1.5 text-slate-400 hover:text-amber-500 transition text-xs" title="重置為今日複習">🔄</button>
-                <button onclick="deleteWord('${w.id}')" class="p-1.5 text-slate-400 hover:text-rose-500 transition text-xs" title="刪除單字">🗑️</button>
+                <button onclick="moveToTrash('${w.id}')" class="p-1.5 text-slate-400 hover:text-rose-500 transition text-xs" title="移入回收桶">🗑️</button>
               </div>
             </div>
             
@@ -1751,12 +1667,94 @@
       renderWordList();
     }
 
-    function deleteWord(id) {
-      if (!confirm('確定要把這個單字移除嗎？')) return;
+    // --- 🗑️ 資源回收桶與單字刪除復原機制 ---
+    function moveToTrash(id) {
+      const target = words.find(w => w.id === id);
+      if (!target) return;
+
+      if (!confirm(`確定要將單字「${target.word}」移入回收桶嗎？`)) return;
+
       words = words.filter(w => w.id !== id);
+      trashWords.unshift({ ...target, deletedAt: new Date().toLocaleString() });
+
       saveWords();
+      saveTrash();
       renderWordList();
       renderCard();
+    }
+
+    function restoreFromTrash(id) {
+      const target = trashWords.find(w => w.id === id);
+      if (!target) return;
+
+      trashWords = trashWords.filter(w => w.id !== id);
+      words.unshift(target);
+
+      saveWords();
+      saveTrash();
+      renderTrashModal();
+      renderWordList();
+      renderCard();
+    }
+
+    function permanentlyDeleteTrash(id) {
+      if (!confirm('確定要永久刪除此單字嗎？此動作無法復原！')) return;
+      trashWords = trashWords.filter(w => w.id !== id);
+      saveTrash();
+      renderTrashModal();
+    }
+
+    function clearAllTrash() {
+      if (trashWords.length === 0) return;
+      if (!confirm('確定要永久清空整個回收桶嗎？所有已刪除單字將徹底消失！')) return;
+      trashWords = [];
+      saveTrash();
+      renderTrashModal();
+    }
+
+    function openTrashModal() {
+      renderTrashModal();
+      document.getElementById('trash-modal').classList.remove('hidden');
+    }
+
+    function closeTrashModal() {
+      document.getElementById('trash-modal').classList.add('hidden');
+    }
+
+    function renderTrashModal() {
+      const container = document.getElementById('trash-list-container');
+      const countEl = document.getElementById('trash-modal-count');
+      countEl.textContent = `${trashWords.length} 個項目`;
+
+      if (trashWords.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-slate-400 text-xs space-y-1">
+            <p class="text-3xl">🍃</p>
+            <p>回收桶乾乾淨淨，沒有刪除的單字。</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = trashWords.map(w => `
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center gap-2 text-xs">
+          <div class="space-y-0.5 overflow-hidden">
+            <div class="flex items-center gap-2">
+              <span class="font-black text-slate-800">${w.word}</span>
+              <span class="text-slate-500 font-medium truncate">${w.definition}</span>
+            </div>
+            <span class="text-[10px] text-slate-400 block">${LANG_NAMES[w.lang] || w.lang} • 刪除於: ${w.deletedAt || '剛才'}</span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="restoreFromTrash('${w.id}')" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-lg border border-emerald-200 transition active:scale-95" title="復原單字">
+              ↩️ 復原
+            </button>
+            <button onclick="permanentlyDeleteTrash('${w.id}')" class="p-1 text-slate-400 hover:text-rose-600 transition" title="永久刪除">
+              ✕
+            </button>
+          </div>
+        </div>
+      `).join('');
     }
 
     function resetWordProgress(id) {
@@ -1871,7 +1869,12 @@
     });
 
     function exportData() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(words, null, 2));
+      const fullBackup = {
+        words: words,
+        trash: trashWords,
+        exportedAt: getTodayStr()
+      };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
       downloadAnchor.setAttribute("download", `vocab_backup_${getTodayStr()}.json`);
@@ -1894,6 +1897,15 @@
               saveWords();
               changeActiveLanguage(activeLang);
               alert('匯入成功！');
+            }
+          } else if (imported && Array.isArray(imported.words)) {
+            if (confirm(`讀取完整備份成功！即將載入 ${imported.words.length} 個單字，是否覆蓋？`)) {
+              words = imported.words;
+              trashWords = imported.trash || [];
+              saveWords();
+              saveTrash();
+              changeActiveLanguage(activeLang);
+              alert('完整還原成功！');
             }
           }
         } catch (err) {
