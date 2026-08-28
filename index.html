@@ -20,7 +20,7 @@
       --bg-gradient-via: #f1f5f9;
       --bg-gradient-to: #f8fafc;
       --card-radius: 1.5rem;
-      --app-font-family: 'Zen Maru Gothic', 'Noto Sans TC', sans-serif;
+      --app-font-family: 'Noto Sans TC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     body {
       font-family: var(--app-font-family);
@@ -167,7 +167,7 @@
 
         <form id="add-form" class="space-y-3.5">
           <div class="relative">
-            <label class="block text-xs font-bold text-slate-600 mb-1">🌱 外語單字 / 詞組 *</label>
+            <label class="block text-xs font-bold text-slate-600 mb-1">🌱 外語單字 / 詞組 * (輸入即時識別詞性)</label>
             <div class="relative">
               <input id="input-word" type="text" required autocomplete="off"
                 placeholder="輸入單字 (例如: implement, schedule, negotiate)"
@@ -256,11 +256,11 @@
         </div>
 
         <div class="pt-2 border-t border-slate-100">
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">🔤 介面字體風格 (精選 10 款)：</label>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">🔤 介面字體風格 (預設俐落黑體)：</label>
           <select id="custom-font-select" onchange="applyCustomFont(this.value)" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs bg-white font-medium focus:outline-none focus:ring-2 custom-theme-border">
+            <option value="'Noto Sans TC', 'Inter', sans-serif">✨ 俐落黑體 / 清晰簡約 (Noto Sans TC - 預設)</option>
+            <option value="'Inter', 'Noto Sans TC', sans-serif">💎 國際質感黑體 / 簡潔 UI (Inter)</option>
             <option value="'Zen Maru Gothic', 'Noto Sans TC', sans-serif">🌸 圓體 / Q 萌圓潤 (Zen Maru Gothic)</option>
-            <option value="'Noto Sans TC', 'Inter', sans-serif">✨ 俐落黑體 / 清晰易讀 (Noto Sans TC)</option>
-            <option value="'Inter', 'Noto Sans TC', sans-serif">💎 國際質感黑體 / 頂級 UI (Inter)</option>
             <option value="'Noto Serif TC', serif">📖 雅緻宋體 / 書卷質感 (Noto Serif TC)</option>
             <option value="'Shippori Mincho', 'Noto Serif TC', serif">🖋️ 復古明體 / 日系詩意 (Shippori Mincho)</option>
             <option value="'Caveat', 'Zen Maru Gothic', cursive">☕ 隨性手寫 / 手帳筆記 (Caveat)</option>
@@ -271,6 +271,7 @@
           </select>
         </div>
 
+        <!-- 自由調色與背景自訂區 -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
           <div>
             <div class="flex items-center justify-between mb-1">
@@ -375,17 +376,32 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    let userTheme = JSON.parse(localStorage.getItem('vocab_theme_cfg_v14')) || {
-      preset: 'slate',
-      primary: '#334155',
-      light: '#f1f5f9',
-      border: '#cbd5e1',
-      from: '#e2e8f0',
-      via: '#f1f5f9',
-      to: '#f8fafc',
-      radius: '1.5rem',
-      font: "'Zen Maru Gothic', 'Noto Sans TC', sans-serif"
-    };
+    // 🎨 預設改為「俐落黑體（Noto Sans TC）」
+    function loadAndMigrateThemeConfig() {
+      const MASTER_THEME_KEY = 'vocab_app_master_theme_v2';
+      let currentCfg = JSON.parse(localStorage.getItem(MASTER_THEME_KEY));
+
+      if (currentCfg && currentCfg.primary) {
+        return currentCfg;
+      }
+
+      const defaultTheme = {
+        preset: 'slate',
+        primary: '#334155',
+        light: '#f1f5f9',
+        border: '#cbd5e1',
+        from: '#e2e8f0',
+        via: '#f1f5f9',
+        to: '#f8fafc',
+        radius: '1.5rem',
+        font: "'Noto Sans TC', 'Inter', sans-serif"
+      };
+
+      localStorage.setItem(MASTER_THEME_KEY, JSON.stringify(defaultTheme));
+      return defaultTheme;
+    }
+
+    let userTheme = loadAndMigrateThemeConfig();
 
     function applyThemeConfig(cfg) {
       const root = document.documentElement;
@@ -396,16 +412,16 @@
       root.style.setProperty('--bg-gradient-via', cfg.via);
       root.style.setProperty('--bg-gradient-to', cfg.to);
       root.style.setProperty('--card-radius', cfg.radius || '1.5rem');
-      root.style.setProperty('--app-font-family', cfg.font || "'Zen Maru Gothic', 'Noto Sans TC', sans-serif");
+      root.style.setProperty('--app-font-family', cfg.font || "'Noto Sans TC', 'Inter', sans-serif");
 
       document.getElementById('custom-color-picker').value = cfg.primary;
       document.getElementById('custom-color-hex').textContent = cfg.primary;
       document.getElementById('custom-bg-picker').value = cfg.from.startsWith('#') ? cfg.from : '#e2e8f0';
       document.getElementById('custom-bg-hex').textContent = cfg.from.startsWith('#') ? cfg.from : '自動顯色';
       document.getElementById('custom-radius-select').value = cfg.radius || '1.5rem';
-      document.getElementById('custom-font-select').value = cfg.font || "'Zen Maru Gothic', 'Noto Sans TC', sans-serif";
+      document.getElementById('custom-font-select').value = cfg.font || "'Noto Sans TC', 'Inter', sans-serif";
 
-      localStorage.setItem('vocab_theme_cfg_v14', JSON.stringify(cfg));
+      localStorage.setItem('vocab_app_master_theme_v2', JSON.stringify(cfg));
     }
 
     function applyPresetTheme(name) {
@@ -689,7 +705,6 @@
     let debounceTimer = null;
     let selectedPOSSet = new Set(['v.']);
 
-    // 測驗核心狀態
     let quizState = {
       queue: [],
       currentIndex: 0,
@@ -1056,7 +1071,6 @@
       };
     }
 
-    // 🎯 複習卡片
     function renderCard() {
       const dueWords = getDueWords();
       const container = document.getElementById('card-container');
@@ -1211,9 +1225,6 @@
       renderCard();
     }
 
-    // ==========================================
-    // 📝 隨堂測驗 (解析顯示 + 錯誤暫停 + 專攻錯題)
-    // ==========================================
     function showQuizStartScreen() {
       const currentList = getActiveLangWords();
       const container = document.getElementById('quiz-container');
@@ -1370,7 +1381,6 @@
       renderQuizQuestion();
     }
 
-    // 專攻錯題重測模式
     function startRetryWrongQuiz() {
       if (quizState.wrongList.length === 0) return;
       const wrongItems = [...quizState.wrongList];
@@ -1414,7 +1424,6 @@
         activeType = 'choice';
       }
 
-      // 1. 🔤 單字四選一
       if (activeType === 'choice') {
         const others = currentList.filter(w => w.id !== target.id).sort(() => 0.5 - Math.random()).slice(0, 3);
         const options = [target, ...others].sort(() => 0.5 - Math.random());
@@ -1436,9 +1445,7 @@
           </div>
           <div id="quiz-feedback" class="text-center min-h-[24px]"></div>
         `;
-      } 
-      // 2. 🧩 例句克漏字填空
-      else if (activeType === 'cloze') {
+      } else if (activeType === 'cloze') {
         const regex = new RegExp(target.word, 'gi');
         const clozeSentence = target.example.replace(regex, ' [ _______ ] ');
 
@@ -1462,9 +1469,7 @@
           </div>
           <div id="quiz-feedback" class="text-center min-h-[24px]"></div>
         `;
-      } 
-      // 3. 📝 多語聽音拼寫填空題
-      else if (activeType === 'spelling') {
+      } else if (activeType === 'spelling') {
         container.innerHTML = `
           <div class="text-center py-5 custom-theme-light-bg rounded-2xl border custom-theme-border space-y-2">
             <span class="text-xs custom-theme-text font-bold uppercase tracking-wider">📝 聽音拼寫填空</span>
@@ -1493,7 +1498,6 @@
       }
     }
 
-    // 選擇題答題處理（含錯誤解析與手動下一步）
     function handleChoiceAnswer(btn, isCorrect, selectedWord, selectedDef) {
       const allBtns = document.querySelectorAll('.quiz-opt-btn');
       allBtns.forEach(b => b.disabled = true);
@@ -1505,7 +1509,6 @@
         btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
         feedback.innerHTML = `<div class="pt-2 text-emerald-600 font-black text-sm">🎉 答對了！太棒了！</div>`;
         quizState.correctCount += 1;
-        // 答對時維持流暢自動跳題
         setTimeout(() => {
           proceedToNextQuestion();
         }, 1100);
@@ -1513,7 +1516,6 @@
         btn.classList.add('bg-rose-500', 'text-white', 'border-rose-600');
         quizState.wrongList.push(target);
 
-        // 💡 答錯時：顯示詳細原因解析卡片與手動下一題按鈕
         feedback.innerHTML = `
           <div class="mt-3 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-left space-y-2 shadow-sm animate-fade-in">
             <div class="flex items-center gap-1.5 text-rose-600 font-black text-xs">
@@ -1532,7 +1534,6 @@
       }
     }
 
-    // 拼寫題答題處理
     function handleSpellingAnswer(e) {
       e.preventDefault();
       const input = document.getElementById('quiz-spelling-input');
@@ -1582,7 +1583,6 @@
       }
     }
 
-    // 測驗成績結算（支援專攻錯題重測）
     function showQuizSummary() {
       const container = document.getElementById('quiz-container');
       const progressBadge = document.getElementById('quiz-progress-badge');
@@ -1642,7 +1642,6 @@
             </div>
           </div>
 
-          <!-- 錯題清單 -->
           ${wrongList.length > 0 ? `
             <div class="text-left bg-rose-50/70 border border-rose-100 rounded-2xl p-3.5 space-y-2 max-w-sm mx-auto">
               <span class="text-xs font-bold text-rose-600 flex items-center gap-1">
@@ -1659,7 +1658,6 @@
             </div>
           ` : ''}
 
-          <!-- 控制按鈕群 -->
           <div class="space-y-2 max-w-xs mx-auto pt-2">
             ${wrongList.length > 0 ? `
               <button onclick="startRetryWrongQuiz()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs shadow-md transition active:scale-95 flex items-center justify-center gap-1">
