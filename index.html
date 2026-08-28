@@ -6,7 +6,6 @@
   <title>多語系記憶曲線單字庫</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- 引入 10 款精選 Google Fonts 字體庫 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fredoka:wght@500;600;700&family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&family=Kosugi+Maru&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Shippori+Mincho:wght@500;700;800&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
   
@@ -407,18 +406,51 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    // 預設字體更新為簡約俐落黑體：'Noto Sans TC', 'Inter', sans-serif
-    let userTheme = JSON.parse(localStorage.getItem('vocab_theme_cfg_v15')) || {
-      preset: 'slate',
-      primary: '#334155',
-      light: '#f1f5f9',
-      border: '#cbd5e1',
-      from: '#e2e8f0',
-      via: '#f1f5f9',
-      to: '#f8fafc',
-      radius: '1.5rem',
-      font: "'Noto Sans TC', 'Inter', sans-serif"
-    };
+    // ==========================================
+    // 🌟 主題設定永久主鍵值與歷史自動回溯繼承 🌟
+    // ==========================================
+    function loadAndInitThemeConfig() {
+      const MASTER_THEME_KEY = 'vocab_theme_master_cfg_v1';
+      let themeCfg = JSON.parse(localStorage.getItem(MASTER_THEME_KEY));
+
+      if (!themeCfg) {
+        // 自動從歷史版本撈取使用者之前調過的自訂主題
+        const legacyThemeKeys = [
+          'vocab_theme_cfg_v15', 'vocab_theme_cfg_v14', 'vocab_theme_cfg_v13', 'vocab_theme_cfg_v12',
+          'vocab_theme_cfg_v11', 'vocab_theme_cfg_v10', 'vocab_theme_cfg'
+        ];
+
+        for (const k of legacyThemeKeys) {
+          try {
+            const oldCfg = JSON.parse(localStorage.getItem(k));
+            if (oldCfg && oldCfg.primary) {
+              themeCfg = oldCfg;
+              break;
+            }
+          } catch(e) {}
+        }
+      }
+
+      // 若完全無歷史紀錄則套用預設黑白灰與俐落黑體
+      if (!themeCfg) {
+        themeCfg = {
+          preset: 'slate',
+          primary: '#334155',
+          light: '#f1f5f9',
+          border: '#cbd5e1',
+          from: '#e2e8f0',
+          via: '#f1f5f9',
+          to: '#f8fafc',
+          radius: '1.5rem',
+          font: "'Noto Sans TC', 'Inter', sans-serif"
+        };
+      }
+
+      localStorage.setItem(MASTER_THEME_KEY, JSON.stringify(themeCfg));
+      return themeCfg;
+    }
+
+    let userTheme = loadAndInitThemeConfig();
 
     function applyThemeConfig(cfg) {
       const root = document.documentElement;
@@ -438,7 +470,8 @@
       document.getElementById('custom-radius-select').value = cfg.radius || '1.5rem';
       document.getElementById('custom-font-select').value = cfg.font || "'Noto Sans TC', 'Inter', sans-serif";
 
-      localStorage.setItem('vocab_theme_cfg_v15', JSON.stringify(cfg));
+      // 永久保存至主鍵值
+      localStorage.setItem('vocab_theme_master_cfg_v1', JSON.stringify(cfg));
     }
 
     function applyPresetTheme(name) {
@@ -1233,7 +1266,6 @@
       renderCard();
     }
 
-    // 🎯 複習四選一判定：答對只給予「困難 (Rating: 1)」，不當作完全會；猜錯直接重置為忘記 (Rating: 0)
     function handleCardRescueChoice(btn, isCorrect) {
       const allBtns = document.querySelectorAll('.card-rescue-btn');
       const feedback = document.getElementById('card-rescue-feedback');
@@ -1245,7 +1277,7 @@
         btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600');
         allBtns.forEach(b => b.disabled = true);
 
-        // 雖然選對，但因為需要看提示，判定為「困難 (Rating: 1)」，不延長天數，縮短排程繼續鞏固
+        // 選對了：但因為借助提示，判定為「困難 (Rating: 1)」，不延長天數，縮短排程繼續鞏固
         const updated = calculateNextReview(current, 1);
         words = words.map(w => w.id === current.id ? updated : w);
         saveWords();
@@ -2007,6 +2039,7 @@
       const fullBackup = {
         words: words,
         trash: trashWords,
+        theme: userTheme,
         exportedAt: getTodayStr()
       };
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
@@ -2037,6 +2070,10 @@
             if (confirm(`讀取完整備份成功！即將載入 ${imported.words.length} 個單字，是否覆蓋？`)) {
               words = imported.words;
               trashWords = imported.trash || [];
+              if (imported.theme) {
+                userTheme = imported.theme;
+                applyThemeConfig(userTheme);
+              }
               saveWords();
               saveTrash();
               changeActiveLanguage(activeLang);
